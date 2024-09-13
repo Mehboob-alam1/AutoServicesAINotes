@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "611134574502",
+    "project_id": "auto-service-ai-notes",
+    "storage_bucket": "auto-service-ai-notes.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:611134574502:android:5609221f787ad35a66c967",
+        "android_client_info": {
+          "package_name": "com.example.auto_services_ai_notes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPBUtw-vGICPi7be4_TkuNRwPhHEzYjTY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
