@@ -16,13 +16,7 @@ import '../utils/color_schema.dart';
 
 final formViewModelProvider =
     StateNotifierProvider<FormViewModel, CustomFormState>((ref) {
-      // final formViewModel = FormViewModel();
 
-      // ref.onDispose(() {
-      //   formViewModel.dispose(); // Clean up when provider is disposed
-      // });
-      //
-      //
       return FormViewModel();
     });
 
@@ -124,7 +118,7 @@ class FormViewModel extends StateNotifier<CustomFormState> {
   void updateUserName(String userName){
     state = state.copyWith(userName: userName);
   }
-  void updateEmail(String value) {
+  void updatePhoneNumber(String value) {
     state = state.copyWith(phoneNumber: value);
   }
 void updateIsRecorded(bool newValue){
@@ -208,6 +202,7 @@ void updateIsRecorded(bool newValue){
              // Save the form data along with the ref ID to Realtime Database
              await newRef.set({
                'refId': refId, // Save the generated ref ID here
+               'userName':state.userName,
                'phoneNumber': state.phoneNumber,
                'retailName': state.retailName,
                'metGM': state.metGM,
@@ -215,13 +210,13 @@ void updateIsRecorded(bool newValue){
                'interestLevel': state.interestLevel,
                'visitSummary': state.visitSummary,
                'nextAction': state.nextAction,
-               'businessCardUrl': downloadUrl,
-               'voiceUrl': voiceUrl,
-               'gpsCoordinates': gpsCoordinates,
+               'businessCardUrl': downloadUrl ?? '',
+               'voiceUrl': voiceUrl ?? '' ,
+               'gpsCoordinates': gpsCoordinates ?? '',
              });
            }
 
-      sendNotification(user: state.phoneNumber, retailName: state.retailName, time: DateTime.now().toIso8601String(), gps: gpsCoordinates, metGM: state.metGM, metSD: state.metSD, linkToBusCard: downloadUrlBusiness, audioFile: voiceUrl,context: context);
+      sendNotification(user: state.phoneNumber,phone: state.phoneNumber, retailName: state.retailName, time: DateTime.now().toIso8601String(), gps: gpsCoordinates, metGM: state.metGM, metSD: state.metSD, linkToBusCard: downloadUrlBusiness, audioFile: voiceUrl,context: context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error during form submission: $e')),
@@ -232,9 +227,66 @@ void updateIsRecorded(bool newValue){
   }
 
 
-  Future<void> sendNotification({
+  // Future<void> sendNotification({
+  //
+  //   required String user,
+  //   required String retailName,
+  //   required String time,
+  //   required String gps,
+  //   required String metGM,
+  //   required String metSD,
+  //   required String linkToBusCard,
+  //   required String audioFile,
+  //   required BuildContext context
+  // }) async {
+  //   final channel = 'dealervisit';
+  //   final message = 'User:$user-'
+  //       'retailName:$retailName-'
+  //       'Time:$time-'
+  //       'LinkToBusCard:$linkToBusCard-'
+  //       'GPS:$gps-'
+  //       'MetGM:$metGM-'
+  //       'MetSD:$metSD-'
+  //       'AudioFile:$audioFile';
+  //
+  //   final url = Uri.parse('https://eu-west-1.aws.data.mongodb-api.com/app/application-2-febnp/endpoint/sendSlackNotification?channel=$channel&message=${Uri.encodeComponent(message)}');
+  //
+  //   print('Constructed URL: $url'); // Print URL for debugging
+  //
+  //   try {
+  //     final response = await http.get(url);
+  //
+  //     if (response.statusCode == 200) {
+  //       print('Notification sent successfully');
+  //       print('Response: ${response.body}');
+  //
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //                  SnackBar(content: Text('Form and API Submitted Successfully'.toUpperCase(), style: GoogleFonts.quicksand(
+  //                    fontWeight: FontWeight.w500,
+  //                    color: kWhiteColor,
+  //                  ),)));
+  //           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FormView()));
+  //
+  //     } else {
+  //       print('Failed to send notification: ${response.statusCode}');
+  //       print('Response Body: ${response.body}');
+  //
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //                  SnackBar(content: Text('API Error: ${response.body}'.toUpperCase(), style: GoogleFonts.quicksand(
+  //                    fontWeight: FontWeight.w500,
+  //                    color: kWhiteColor,
+  //                  ),)),
+  //                );
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //   }
+  // }
 
+
+  Future<void> sendNotification({
     required String user,
+    required String phone,
     required String retailName,
     required String time,
     required String gps,
@@ -242,9 +294,11 @@ void updateIsRecorded(bool newValue){
     required String metSD,
     required String linkToBusCard,
     required String audioFile,
-    required BuildContext context
+    required BuildContext context,
   }) async {
     final channel = 'dealervisit';
+
+    // Construct the message for Slack notification
     final message = 'User:$user-'
         'retailName:$retailName-'
         'Time:$time-'
@@ -254,41 +308,71 @@ void updateIsRecorded(bool newValue){
         'MetSD:$metSD-'
         'AudioFile:$audioFile';
 
-    final url = Uri.parse('https://eu-west-1.aws.data.mongodb-api.com/app/application-2-febnp/endpoint/sendSlackNotification?channel=$channel&message=${Uri.encodeComponent(message)}');
+    // Construct the Slack notification URL
+    final slackUrl = Uri.parse(
+        'https://eu-west-1.aws.data.mongodb-api.com/app/application-2-febnp/endpoint/sendSlackNotification?channel=$channel&message=${Uri.encodeComponent(message)}');
 
-    print('Constructed URL: $url'); // Print URL for debugging
+    print('Constructed Slack URL: $slackUrl'); // Print URL for debugging
 
     try {
-      final response = await http.get(url);
+      // Send Slack notification
+      final slackResponse = await http.get(slackUrl);
 
-      if (response.statusCode == 200) {
+      if (slackResponse.statusCode == 200) {
         print('Notification sent successfully');
-        print('Response: ${response.body}');
-
-        ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text('Form and API Submitted Successfully'.toUpperCase(), style: GoogleFonts.quicksand(
-                     fontWeight: FontWeight.w500,
-                     color: kWhiteColor,
-                   ),)));
-            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const FormView()));
-
+        print('Response: ${slackResponse.body}');
       } else {
-        print('Failed to send notification: ${response.statusCode}');
-        print('Response Body: ${response.body}');
+        print('Failed to send Slack notification: ${slackResponse.statusCode}');
+        print('Response Body: ${slackResponse.body}');
+      }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text('API Error: ${response.body}'.toUpperCase(), style: GoogleFonts.quicksand(
-                     fontWeight: FontWeight.w500,
-                     color: kWhiteColor,
-                   ),)),
-                 );
+      // Construct the message for the API request by concatenating all fields
+      final apiMessage = 'User: $user, Retail Name: $retailName, Time: $time, GPS: $gps, Met GM: $metGM, Met SD: $metSD, Bus Card: $linkToBusCard, Audio: $audioFile';
+
+      // Construct the API URL
+      final apiUrl = Uri.parse(
+          'https://common.autoservice.ai/app?phone=$phone&message=${Uri.encodeComponent(apiMessage)}');
+
+      print('Constructed API URL: $apiUrl'); // Print API URL for debugging
+
+      // Send request to the external API
+      final apiResponse = await http.get(apiUrl);
+
+      if (apiResponse.statusCode == 200) {
+        print('API request sent successfully');
+        print('Response: ${apiResponse.body}');
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            'Form and API Submitted Successfully'.toUpperCase(),
+            style: GoogleFonts.quicksand(
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+        ));
+
+        // Navigate to the form view after successful submission
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const FormView()));
+      } else {
+        print('Failed to send API request: ${apiResponse.statusCode}');
+        print('Response Body: ${apiResponse.body}');
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            'API Error: ${apiResponse.body}'.toUpperCase(),
+            style: GoogleFonts.quicksand(
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+        ));
       }
     } catch (e) {
       print('Error: $e');
     }
   }
-
-
 
   // Future<void> submitForm(String voiceUrl,BuildContext context) async {
  //    // Start the loading state

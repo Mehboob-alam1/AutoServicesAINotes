@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <application
-        android:label="auto_services_ai_notes"
+        android:label="AutoService AI Notes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         tools:replace="android:icon, android:label">

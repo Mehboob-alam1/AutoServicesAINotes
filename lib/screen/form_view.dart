@@ -78,6 +78,7 @@ class _FormViewState extends ConsumerState<FormView> with SingleTickerProviderSt
   // Save user data to SharedPreferences
   Future<void> _saveUserName(String userName) async {
     final prefs = await SharedPreferences.getInstance();
+
     await prefs.setString('userName', userName);
   }
 
@@ -111,7 +112,7 @@ class _FormViewState extends ConsumerState<FormView> with SingleTickerProviderSt
       appBar: AppBar(
         backgroundColor: kBGDarkColor,
         centerTitle: true,
-        title: const Text('Auto Service AI Notes'),
+        title: const Text('AutoService AI Notes'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -128,7 +129,10 @@ class _FormViewState extends ConsumerState<FormView> with SingleTickerProviderSt
                 onChanged: (value) {
                   formViewModel.updateUserName(value);
                   _saveUserName(_userNameController.text);
+                  formViewModel.updateUserName(_userNameController.text);
+
                 },
+
                 validator: (value) => CFValidators.phoneNum(value), // Add validation logic
               ),
               CommonTextField(
@@ -137,8 +141,10 @@ class _FormViewState extends ConsumerState<FormView> with SingleTickerProviderSt
                 label: "Phone Number",
                 keyboardType: TextInputType.phone,
                 onChanged: (value) {
-                  formViewModel.updateEmail(value);
+
+                  formViewModel.updatePhoneNumber(value);
                   _saveUserPhone(_phoneNumberController.text); // Save phone number
+                  formViewModel.updatePhoneNumber(_phoneNumberController.text);
                 },
                 validator: (value) => CFValidators.phoneNum(value), // Add validation logic
               ),
@@ -231,19 +237,11 @@ class _FormViewState extends ConsumerState<FormView> with SingleTickerProviderSt
               voiceRecordButton(size, formViewModel),
               CommonButton(
                 onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    if (_downloadVoiceUrl == null || formViewModel.isVoiceRecorded == null) {
-                      formViewModel.updateIsRecorded(true);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Please Record the voice", style: GoogleFonts.quicksand(color: kWhiteColor)),
-                        ),
-                      );
-                    } else {
-                      await formViewModel.pickBusinessCardImage(context, _downloadVoiceUrl!);
-                      formViewModel.updateIsRecorded(false);
-                    }
-                  }
+                      formViewModel.updateUserName(_userNameController.text);
+                      formViewModel.updatePhoneNumber(_phoneNumberController.text);
+
+                      await formViewModel.pickBusinessCardImage(context, _downloadVoiceUrl?? '');
+
                 },
                 label: 'Click to Take Photo of Bus Card',
               ),
@@ -273,7 +271,7 @@ class _FormViewState extends ConsumerState<FormView> with SingleTickerProviderSt
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    _audioRecorder.isRecording ? 'Stop Recording'.toUpperCase() : 'Start Recording'.toUpperCase(),
+                    _audioRecorder.isRecording ? 'Stop Session'.toUpperCase() : 'Record Session'.toUpperCase(),
                   ),
                 ],
               ),
